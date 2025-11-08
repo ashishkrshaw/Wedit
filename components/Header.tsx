@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { WandIcon, SparklesIcon, HistoryIcon, MagicEditorLogo, MailIcon, SunIcon, MoonIcon, PhotoStackIcon, VideoIcon, UsersIcon, ChevronDownIcon, ChatBubbleIcon, LogoutIcon } from './IconComponents';
+import { WandIcon, SparklesIcon, HistoryIcon, MagicEditorLogo, MailIcon, SunIcon, MoonIcon, PhotoStackIcon, VideoIcon, UsersIcon, ChevronDownIcon, ChatBubbleIcon } from './IconComponents';
 
 type Tab = 'Editor' | 'Combine' | 'Video' | 'Trending' | 'History' | 'Community' | 'Bot';
 type Theme = 'light' | 'dark';
@@ -11,10 +10,9 @@ interface HeaderProps {
   theme: Theme;
   toggleTheme: () => void;
   onFeedbackClick: () => void;
-  onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, theme, toggleTheme, onFeedbackClick, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, theme, toggleTheme, onFeedbackClick }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -88,15 +86,6 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, theme, toggleT
                                     {item.label}
                                 </button>
                             ))}
-                            <div className="my-1 h-px bg-[var(--border-color)]"></div>
-                            <button
-                                onClick={onLogout}
-                                className="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                role="menuitem"
-                            >
-                                <LogoutIcon className="w-5 h-5 mr-3" />
-                                Logout
-                            </button>
                         </div>
                     </div>
                 )}
