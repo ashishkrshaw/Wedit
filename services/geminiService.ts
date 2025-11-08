@@ -1,5 +1,8 @@
+/// <reference types="vite/client" />
 
 import type { EditedResult, CommunityPrompt, ChatMessage } from '../types';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Helper to convert a File to a base64 string and mimeType
 const fileToBase64 = (file: File): Promise<{ data: string; mimeType: string }> => {
@@ -20,7 +23,7 @@ const fileToBase64 = (file: File): Promise<{ data: string; mimeType: string }> =
 
 export const classifyImageForMale = async (imageFile: File): Promise<boolean> => {
     const imageData = await fileToBase64(imageFile);
-    const response = await fetch('/api/classify-image', {
+    const response = await fetch(`${API_BASE_URL}/api/classify-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageData }),
@@ -37,7 +40,7 @@ export const improvePrompt = async (prompt: string): Promise<string> => {
     if (!prompt.trim()) {
         throw new Error("Prompt cannot be empty.");
     }
-    const response = await fetch('/api/improve-prompt', {
+    const response = await fetch(`${API_BASE_URL}/api/improve-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -53,7 +56,7 @@ export const improvePrompt = async (prompt: string): Promise<string> => {
 export const editImageWithNanoBanana = async (imageFile: File, prompt: string): Promise<EditedResult> => {
     const imageData = await fileToBase64(imageFile);
 
-    const response = await fetch('/api/edit-image', {
+    const response = await fetch(`${API_BASE_URL}/api/edit-image`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -75,7 +78,7 @@ export const combineImagesWithNanoBanana = async (image1File: File, image2File: 
         fileToBase64(image2File),
     ]);
 
-    const response = await fetch('/api/combine-images', {
+    const response = await fetch(`${API_BASE_URL}/api/combine-images`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image1Data, image2Data, prompt }),
@@ -94,7 +97,7 @@ export const generateVideoWithVeo = async (prompt: string, imageFile: File | nul
 
     const imageData = imageFile ? await fileToBase64(imageFile) : null;
 
-    const startResponse = await fetch('/api/generate-video', {
+    const startResponse = await fetch(`${API_BASE_URL}/api/generate-video`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, imageData }),
@@ -111,7 +114,7 @@ export const generateVideoWithVeo = async (prompt: string, imageFile: File | nul
     while (true) {
         await new Promise(resolve => setTimeout(resolve, 10000));
 
-        const statusResponse = await fetch('/api/video-status', {
+        const statusResponse = await fetch(`${API_BASE_URL}/api/video-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ operationName }),
@@ -138,7 +141,7 @@ export const generateVideoWithVeo = async (prompt: string, imageFile: File | nul
 
 
 export const getCommunityPrompts = async (): Promise<CommunityPrompt[]> => {
-    const response = await fetch('/api/community/prompts');
+    const response = await fetch(`${API_BASE_URL}/api/community/prompts`);
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Server responded with status ${response.status}`);
@@ -146,8 +149,31 @@ export const getCommunityPrompts = async (): Promise<CommunityPrompt[]> => {
     return response.json();
 };
 
+export interface SharePromptData {
+    name: string;
+    email: string;
+    phone: string;
+    title: string;
+    prompt: string;
+}
+
+export const shareCommunityPrompt = async (promptData: SharePromptData): Promise<{ message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/api/community/share-prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(promptData),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || `Server responded with status ${response.status}`);
+    }
+    
+    return data;
+};
+
 export const sendMessageToBot = async (history: ChatMessage[], newMessage: string): Promise<string> => {
-    const response = await fetch('/api/chat', {
+    const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ history, newMessage }),

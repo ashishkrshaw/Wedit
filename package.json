@@ -4,11 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:frontend": "vite",
+    "dev:backend": "cd backend && npm run dev",
     "build:frontend": "vite build",
-    "build:backend": "cd backend && npm install && npm run build",
-    "build": "npm run build:frontend && npm run build:backend",
-    "start": "node backend/dist/backend/server.js"
+    "build:backend": "cd backend && npm install && npm run build"
   },
   "dependencies": {
     "react": "^19.1.1",

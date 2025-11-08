@@ -1,12 +1,14 @@
+
 {
   "name": "magic-editor-backend",
   "version": "1.0.0",
   "description": "Backend server for Magic Editor",
+  "type": "module",
   "main": "dist/backend/server.js",
   "scripts": {
     "start": "node dist/backend/server.js",
     "build": "tsc",
-    "dev": "ts-node-dev server.ts"
+    "dev": "ts-node-dev --esm --respawn server.ts"
   },
   "dependencies": {
     "@google/genai": "^1.20.0",

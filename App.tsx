@@ -1,9 +1,7 @@
 
-
-
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { EditedResult, OriginalImage, OriginalVideo, HistoryItem, PromptCategory, PromptIdea, UserInfo, VideoPreset, CommunityPrompt, ChatMessage } from './types';
-import { editImageWithNanoBanana, improvePrompt, classifyImageForMale, combineImagesWithNanoBanana, generateVideoWithVeo, getCommunityPrompts, sendMessageToBot } from './services/geminiService';
+import { editImageWithNanoBanana, improvePrompt, classifyImageForMale, combineImagesWithNanoBanana, generateVideoWithVeo, getCommunityPrompts, sendMessageToBot, shareCommunityPrompt, SharePromptData } from './services/geminiService';
 import { sendUserInfoToDeveloper } from './services/userDataService';
 import Header from './components/Header';
 import ImageUploader from './components/ImageUploader';
@@ -23,6 +21,7 @@ import {
   UploadIcon,
   UsersIcon,
   PaperAirplaneIcon,
+  PlusCircleIcon,
 } from './components/IconComponents';
 
 type Tab = 'Editor' | 'Combine' | 'Video' | 'Trending' | 'Community' | 'History' | 'Bot';
@@ -885,13 +884,26 @@ interface CommunityViewProps {
   prompts: CommunityPrompt[];
   isLoading: boolean;
   onUsePrompt: (prompt: string, targetTab: Tab) => void;
+  onOpenShareModal: () => void;
 }
 
-const CommunityView: React.FC<CommunityViewProps> = ({ prompts, isLoading, onUsePrompt }) => {
+const CommunityView: React.FC<CommunityViewProps> = ({ prompts, isLoading, onUsePrompt, onOpenShareModal }) => {
     return (
         <div>
-            <h2 className="text-2xl font-bold text-[var(--text-color-strong)] mb-1">Community Prompts</h2>
-            <p className="text-[var(--text-color)] mb-6">Get inspired by prompts shared by other creators. The ability to share your own prompts is temporarily disabled.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-[var(--text-color-strong)] mb-1">Community Prompts</h2>
+                    <p className="text-[var(--text-color)]">Get inspired by prompts shared by other creators.</p>
+                </div>
+                <button 
+                    onClick={onOpenShareModal}
+                    className="flex items-center justify-center whitespace-nowrap bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-2 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-color)]"
+                >
+                    <PlusCircleIcon className="w-5 h-5 mr-2" />
+                    Share Your Prompt
+                </button>
+            </div>
+
 
             {isLoading ? (
                 <div className="text-center py-10"><Spinner className="w-8 h-8 mx-auto text-[var(--accent-color)]" /></div>
@@ -918,6 +930,109 @@ const CommunityView: React.FC<CommunityViewProps> = ({ prompts, isLoading, onUse
         </div>
     );
 };
+
+interface SharePromptModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: SharePromptData) => void;
+    isLoading: boolean;
+    error: string | null;
+    successMessage: string | null;
+}
+
+const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose, onSubmit, isLoading, error, successMessage }) => {
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', title: '', prompt: '' });
+    const [formError, setFormError] = useState('');
+
+    useEffect(() => {
+        // Reset form when modal opens
+        if (isOpen) {
+            setFormData({ name: '', email: '', phone: '', title: '', prompt: '' });
+            setFormError('');
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const { name, email, phone, title, prompt } = formData;
+        if (!name || !email || !phone || !title || !prompt) {
+            setFormError('All fields are required.');
+            return;
+        }
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            setFormError("Please enter a valid email address.");
+            return;
+        }
+        setFormError('');
+        onSubmit(formData);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-[var(--card-bg-color)] rounded-xl shadow-2xl w-full max-w-lg animate-slide-up" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-4 border-b border-[var(--border-color)]">
+                    <h2 className="text-lg font-bold text-[var(--text-color-strong)]">Share Your Masterpiece</h2>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-[var(--border-color)]">
+                        <XMarkIcon className="w-5 h-5"/>
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        {successMessage ? (
+                            <div className="text-center p-8">
+                                <PlusCircleIcon className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                                <h3 className="text-xl font-bold text-[var(--text-color-strong)]">Success!</h3>
+                                <p className="text-[var(--text-color)] mt-2">{successMessage}</p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-sm text-[var(--text-color)]">Fill out the details below to share your prompt with the community. After a quick safety check, it will appear on the list.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium text-[var(--text-color-strong)]">Name</label>
+                                        <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-medium text-[var(--text-color-strong)]">Email</label>
+                                        <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="phone" className="block text-sm font-medium text-[var(--text-color-strong)]">Phone Number</label>
+                                    <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm" />
+                                </div>
+                                <div>
+                                    <label htmlFor="title" className="block text-sm font-medium text-[var(--text-color-strong)]">Prompt Title</label>
+                                    <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} placeholder="e.g., 'Cyberpunk Warrior'" className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm" />
+                                </div>
+                                <div>
+                                    <label htmlFor="prompt" className="block text-sm font-medium text-[var(--text-color-strong)]">The Prompt</label>
+                                    <textarea name="prompt" id="prompt" value={formData.prompt} onChange={handleChange} rows={4} placeholder="e.g., 'Turn me into a cyberpunk warrior...'" className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm resize-none"></textarea>
+                                </div>
+                                {formError && <p className="text-sm text-red-600">{formError}</p>}
+                                {error && <p className="text-sm text-red-600">{error}</p>}
+                            </>
+                        )}
+                    </div>
+                    {!successMessage && (
+                        <div className="p-4 bg-[var(--bg-color)] border-t border-[var(--border-color)] rounded-b-xl">
+                            <button type="submit" disabled={isLoading} className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-2.5 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                {isLoading ? <><Spinner className="mr-2" /> Submitting...</> : "Share with Community"}
+                            </button>
+                        </div>
+                    )}
+                </form>
+            </div>
+        </div>
+    );
+};
+
 
 interface BotViewProps {
     messages: ChatMessage[];
@@ -1062,6 +1177,12 @@ const App: React.FC = () => {
   const [communityPrompts, setCommunityPrompts] = useState<CommunityPrompt[]>([]);
   const [isCommunityLoading, setIsCommunityLoading] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
+
+  // Community share state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isSharingPrompt, setIsSharingPrompt] = useState(false);
+  const [sharePromptError, setSharePromptError] = useState<string | null>(null);
+  const [sharePromptSuccess, setSharePromptSuccess] = useState<string | null>(null);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -1325,6 +1446,25 @@ const App: React.FC = () => {
     }
   }
 
+  const handleSharePromptSubmit = async (data: SharePromptData) => {
+    setIsSharingPrompt(true);
+    setSharePromptError(null);
+    setSharePromptSuccess(null);
+    try {
+        const result = await shareCommunityPrompt(data);
+        setSharePromptSuccess(result.message);
+        await fetchCommunityPrompts(); // Refresh list
+        setTimeout(() => {
+            setIsShareModalOpen(false);
+            setSharePromptSuccess(null); // Reset for next time
+        }, 2500);
+    } catch (err) {
+        setSharePromptError(getFriendlyErrorMessage(err));
+    } finally {
+        setIsSharingPrompt(false);
+    }
+  };
+
   const handleUsePrompt = (newPrompt: string, targetTab: Tab) => {
     setPrompt(newPrompt);
     setActiveTab(targetTab);
@@ -1496,6 +1636,11 @@ const App: React.FC = () => {
             prompts={communityPrompts}
             isLoading={isCommunityLoading}
             onUsePrompt={handleUsePrompt}
+            onOpenShareModal={() => {
+                setSharePromptError(null);
+                setSharePromptSuccess(null);
+                setIsShareModalOpen(true);
+            }}
         />;
       case 'History':
         return <HistoryView 
@@ -1536,6 +1681,15 @@ const App: React.FC = () => {
           onDownload={downloadContent}
         />
       }
+
+      <SharePromptModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onSubmit={handleSharePromptSubmit}
+        isLoading={isSharingPrompt}
+        error={sharePromptError}
+        successMessage={sharePromptSuccess}
+      />
     </>
   );
 };

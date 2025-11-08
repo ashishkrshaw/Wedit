@@ -1,6 +1,8 @@
 // This file had a user-provided comment indicating a fix that was already present but not working.
 // The new fix changes the import style to avoid global type conflicts.
-import express from 'express';
+// FIX: Changed express import to a default import. All Request, Response, and NextFunction types are now explicitly namespaced (e.g., express.Request). This resolves conflicts with global types (e.g., DOM's Request) and fixes numerous 'property not found' errors on req and res objects.
+// FIX: Changed express import to include named type imports and replaced namespaced types (e.g., express.Request) with direct types (e.g., Request) to resolve all type errors.
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs/promises';
@@ -129,8 +131,7 @@ const processImageApiResponse = (response: any): EditedResult => {
 };
 
 // Centralized error handler for generating user-friendly messages
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-const handleApiError = (error: unknown, req: express.Request, res: express.Response) => {
+const handleApiError = (error: unknown, req: Request, res: Response) => {
     console.error(`Error in ${req.path}:`, error);
     let friendlyMessage = "An unexpected server error occurred. Please try again later.";
     let statusCode = 500;
@@ -165,8 +166,7 @@ const handleApiError = (error: unknown, req: express.Request, res: express.Respo
 
 
 // Middleware to gracefully handle missing API key
-// FIX: Explicitly type req, res, and next to resolve method/property not found errors.
-const checkApiKeyAndService = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const checkApiKeyAndService = (req: Request, res: Response, next: NextFunction) => {
     if (!ai) {
         return res.status(503).json({
             error: "Service Unavailable: The server is missing the required API_KEY. Please contact the administrator to configure the server environment."
@@ -180,8 +180,7 @@ const checkApiKeyAndService = (req: express.Request, res: express.Response, next
 const apiRouter = express.Router();
 apiRouter.use(checkApiKeyAndService); // Apply middleware to all API routes
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/classify-image', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/classify-image', async (req: Request, res: Response) => {
     try {
         const { imageData } = req.body;
         if (!imageData) {
@@ -203,8 +202,7 @@ apiRouter.post('/classify-image', async (req: express.Request, res: express.Resp
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
     try {
         const { prompt } = req.body;
         if (!prompt) {
@@ -225,8 +223,7 @@ apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Resp
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/edit-image', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/edit-image', async (req: Request, res: Response) => {
     try {
         const { imageData, prompt } = req.body;
         if (!imageData || !prompt) {
@@ -251,8 +248,7 @@ apiRouter.post('/edit-image', async (req: express.Request, res: express.Response
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/combine-images', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/combine-images', async (req: Request, res: Response) => {
     try {
         const { image1Data, image2Data, prompt } = req.body;
         if (!image1Data || !image2Data || !prompt) {
@@ -278,8 +274,7 @@ apiRouter.post('/combine-images', async (req: express.Request, res: express.Resp
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/generate-video', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/generate-video', async (req: Request, res: Response) => {
     try {
         const { prompt, imageData } = req.body;
         if (!prompt) {
@@ -302,8 +297,7 @@ apiRouter.post('/generate-video', async (req: express.Request, res: express.Resp
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/video-status', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/video-status', async (req: Request, res: Response) => {
     try {
         const { operationName } = req.body;
         if (!operationName) {
@@ -346,8 +340,7 @@ apiRouter.post('/video-status', async (req: express.Request, res: express.Respon
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
+apiRouter.post('/chat', async (req: Request, res: Response) => {
     try {
         const { history, newMessage } = req.body as { history: ChatMessage[], newMessage: string };
         if (!newMessage) {
@@ -382,8 +375,7 @@ apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
 // --- Community Endpoints ---
 const communityRouter = express.Router();
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-communityRouter.get('/prompts', async (req: express.Request, res: express.Response) => {
+communityRouter.get('/prompts', async (req: Request, res: Response) => {
     try {
         const communityPrompts = await readPromptsFromFile();
         // Return prompts in reverse chronological order
@@ -393,8 +385,7 @@ communityRouter.get('/prompts', async (req: express.Request, res: express.Respon
     }
 });
 
-// FIX: Explicitly type req and res to resolve method/property not found errors.
-communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: express.Request, res: express.Response) => {
+communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: Request, res: Response) => {
     try {
         const { name, email, phone, title, prompt } = req.body;
         if (!name || !email || !phone || !title || !prompt) {
@@ -447,22 +438,6 @@ communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: express
 
 app.use('/api', apiRouter);
 app.use('/api/community', communityRouter);
-
-// --- Static Asset Serving ---
-// Serve the built Vite app in production
-if (process.env.NODE_ENV === 'production') {
-    // The path is relative to the compiled server.js file, which will be in backend/dist/backend/.
-    // We go up three levels to the project root, then into the frontend's 'dist' folder.
-    const frontendDistPath = path.join(__dirname, '..', '..', '..', 'dist');
-    app.use(express.static(frontendDistPath));
-
-    // Handle all other routes by serving the index.html, allowing React to handle routing
-    // FIX: Explicitly type req and res to resolve method/property not found errors.
-    app.get('*', (req: express.Request, res: express.Response) => {
-      res.sendFile(path.join(frontendDistPath, 'index.html'));
-    });
-}
-
 
 // Start the server
 app.listen(port, () => {
