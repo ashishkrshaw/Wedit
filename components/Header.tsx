@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { WandIcon, SparklesIcon, HistoryIcon, ALogoIcon, MailIcon, SunIcon, MoonIcon, PhotoStackIcon, VideoIcon, UsersIcon, ChevronDownIcon, ChatBubbleIcon } from './IconComponents';
+import { WandIcon, SparklesIcon, HistoryIcon, MagicEditorLogo, MailIcon, SunIcon, MoonIcon, PhotoStackIcon, VideoIcon, UsersIcon, ChevronDownIcon, ChatBubbleIcon } from './IconComponents';
 
 type Tab = 'Editor' | 'Combine' | 'Video' | 'Trending' | 'History' | 'Community' | 'Bot';
 type Theme = 'light' | 'dark';
@@ -45,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, theme, toggleT
     <header className="sticky top-0 z-50 py-3 px-4 sm:px-6 border-b border-[var(--border-color)] bg-[var(--card-bg-color)]/80 backdrop-blur-xl">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <ALogoIcon className="w-8 h-8" />
+          <MagicEditorLogo className="w-8 h-8" />
           <h1 className="text-lg font-bold tracking-tight text-[var(--text-color-strong)]">
             Magic Editor
           </h1>

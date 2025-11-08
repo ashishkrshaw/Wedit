@@ -1,11 +1,13 @@
 
 
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { EditedResult, OriginalImage, OriginalVideo, HistoryItem, PromptCategory, PromptIdea, UserInfo, VideoPreset, CommunityPrompt, ChatMessage } from './types';
 import { editImageWithNanoBanana, improvePrompt, classifyImageForMale, combineImagesWithNanoBanana, generateVideoWithVeo, getCommunityPrompts, sendMessageToBot } from './services/geminiService';
 import { sendUserInfoToDeveloper } from './services/userDataService';
 import Header from './components/Header';
 import ImageUploader from './components/ImageUploader';
+import SplashScreen from './components/SplashScreen';
 import {
   SparklesIcon,
   DownloadIcon,
@@ -1040,6 +1042,7 @@ const extractFrameFromVideo = (videoFile: File, time: number = 0): Promise<File>
 // --- Main App Component ---
 
 const App: React.FC = () => {
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('Editor');
   const [theme, setTheme] = useState<Theme>(localStorage.getItem('theme') as Theme || 'light');
   const [originalImage, setOriginalImage] = useState<OriginalImage | null>(null);
@@ -1078,6 +1081,13 @@ const App: React.FC = () => {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 2500); // Splash screen duration
+    return () => clearTimeout(timer);
+  }, []);
   
   useEffect(() => {
     // FIX: Changed type of interval to be compatible with setInterval return type in different environments (browser vs. node).
@@ -1496,6 +1506,10 @@ const App: React.FC = () => {
         return null;
     }
   };
+  
+  if (isAppLoading) {
+    return <SplashScreen />;
+  }
   
   return (
     <>

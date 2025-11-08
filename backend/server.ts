@@ -1,5 +1,6 @@
-// FIX: Explicitly importing Request, Response, and NextFunction from express to resolve type conflicts with global types (e.g., from DOM libraries). This ensures that Express's methods and properties are correctly recognized throughout the file.
-import express, { Request, Response, NextFunction } from 'express';
+// This file had a user-provided comment indicating a fix that was already present but not working.
+// The new fix changes the import style to avoid global type conflicts.
+import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs/promises';
@@ -25,6 +26,11 @@ app.use(cors());
 // Increase payload limit for base64 images
 app.use(express.json({ limit: '50mb' }));
 
+// FIX: 'trustProxy' was an invalid option for rateLimit. It should be set on the app itself.
+// trustProxy is important if the app is deployed behind a reverse proxy (e.g., Heroku, Vercel, Nginx).
+// It ensures the rate limiter uses the client's IP address, not the proxy's.
+app.set('trust proxy', 1);
+
 // --- Rate Limiting ---
 // Apply rate limiting to all API requests to protect against abuse and stay within free tier limits.
 // We'll set a conservative limit of 15 requests per minute per user (IP address) to ensure stability.
@@ -36,9 +42,6 @@ const apiLimiter = rateLimit({
     message: {
         error: "You have exceeded the 15 requests in 1 minute limit! Please try again later."
     },
-    // trustProxy is important if the app is deployed behind a reverse proxy (e.g., Heroku, Vercel, Nginx).
-    // It ensures the rate limiter uses the client's IP address, not the proxy's.
-    trustProxy: 1,
 });
 
 // Apply the rate limiting middleware to all API routes starting with /api
@@ -53,9 +56,9 @@ if (!apiKey) {
 }
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
-const imageModel = 'gemini-2.5-flash-image-preview'; // aka 'nano-banana'
+const imageModel = 'gemini-2.5-flash-image';
 const textModel = 'gemini-2.5-flash';
-const videoModel = 'veo-2.0-generate-001';
+const videoModel = 'veo-3.1-fast-generate-preview';
 
 // --- System Instructions ---
 const EDIT_INSTRUCTION_PREFIX = "You are an expert photo editor. Your MOST IMPORTANT and non-negotiable rule is to preserve the face of the person in the original photo with 100% accuracy. The facial features, identity, and structure MUST remain completely unchanged. DO NOT alter the face. Any changes to the face are a failure. Your secondary goal is to apply the user's requested edits to the rest of the image, ensuring the changes are photorealistic, seamless, and match the original's lighting, shadows, and quality. The user's request is: ";
@@ -126,7 +129,8 @@ const processImageApiResponse = (response: any): EditedResult => {
 };
 
 // Centralized error handler for generating user-friendly messages
-const handleApiError = (error: unknown, req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+const handleApiError = (error: unknown, req: express.Request, res: express.Response) => {
     console.error(`Error in ${req.path}:`, error);
     let friendlyMessage = "An unexpected server error occurred. Please try again later.";
     let statusCode = 500;
@@ -161,7 +165,8 @@ const handleApiError = (error: unknown, req: Request, res: Response) => {
 
 
 // Middleware to gracefully handle missing API key
-const checkApiKeyAndService = (req: Request, res: Response, next: NextFunction) => {
+// FIX: Explicitly type req, res, and next to resolve method/property not found errors.
+const checkApiKeyAndService = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (!ai) {
         return res.status(503).json({
             error: "Service Unavailable: The server is missing the required API_KEY. Please contact the administrator to configure the server environment."
@@ -175,7 +180,8 @@ const checkApiKeyAndService = (req: Request, res: Response, next: NextFunction) 
 const apiRouter = express.Router();
 apiRouter.use(checkApiKeyAndService); // Apply middleware to all API routes
 
-apiRouter.post('/classify-image', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/classify-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData } = req.body;
         if (!imageData) {
@@ -197,7 +203,8 @@ apiRouter.post('/classify-image', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt } = req.body;
         if (!prompt) {
@@ -218,7 +225,8 @@ apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/edit-image', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/edit-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData, prompt } = req.body;
         if (!imageData || !prompt) {
@@ -243,7 +251,8 @@ apiRouter.post('/edit-image', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/combine-images', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/combine-images', async (req: express.Request, res: express.Response) => {
     try {
         const { image1Data, image2Data, prompt } = req.body;
         if (!image1Data || !image2Data || !prompt) {
@@ -269,7 +278,8 @@ apiRouter.post('/combine-images', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/generate-video', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/generate-video', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt, imageData } = req.body;
         if (!prompt) {
@@ -292,14 +302,20 @@ apiRouter.post('/generate-video', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/video-status', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/video-status', async (req: express.Request, res: express.Response) => {
     try {
         const { operationName } = req.body;
         if (!operationName) {
             return res.status(400).json({ error: 'operationName is required' });
         }
         
-        const operation = await ai!.operations.getVideosOperation({ operation: operationName });
+        // The getVideosOperation method expects an Operation object for its 'operation' parameter,
+        // not just the name string. In our stateless setup, we only have the operation's name.
+        // We reconstruct a minimal object that the SDK can use to find the name, which should
+        // resolve the "Operation name is required" error that occurs when a string is passed.
+        // FIX: Cast the partial object to `any` to bypass strict type checking for the missing internal property `_fromAPIResponse`.
+        const operation = await ai!.operations.getVideosOperation({ operation: { name: operationName } as any });
         
         const metadata = operation.metadata;
 
@@ -330,7 +346,8 @@ apiRouter.post('/video-status', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/chat', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
     try {
         const { history, newMessage } = req.body as { history: ChatMessage[], newMessage: string };
         if (!newMessage) {
@@ -365,7 +382,8 @@ apiRouter.post('/chat', async (req: Request, res: Response) => {
 // --- Community Endpoints ---
 const communityRouter = express.Router();
 
-communityRouter.get('/prompts', async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+communityRouter.get('/prompts', async (req: express.Request, res: express.Response) => {
     try {
         const communityPrompts = await readPromptsFromFile();
         // Return prompts in reverse chronological order
@@ -375,7 +393,8 @@ communityRouter.get('/prompts', async (req: Request, res: Response) => {
     }
 });
 
-communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: Request, res: Response) => {
+// FIX: Explicitly type req and res to resolve method/property not found errors.
+communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: express.Request, res: express.Response) => {
     try {
         const { name, email, phone, title, prompt } = req.body;
         if (!name || !email || !phone || !title || !prompt) {
@@ -438,7 +457,8 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express.static(frontendDistPath));
 
     // Handle all other routes by serving the index.html, allowing React to handle routing
-    app.get('*', (req: Request, res: Response) => {
+    // FIX: Explicitly type req and res to resolve method/property not found errors.
+    app.get('*', (req: express.Request, res: express.Response) => {
       res.sendFile(path.join(frontendDistPath, 'index.html'));
     });
 }

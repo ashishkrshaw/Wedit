@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const ALogoIcon: React.FC<{ className?: string }> = ({ className }) => (
+export const MagicEditorLogo: React.FC<{ className?: string }> = ({ className }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         viewBox="0 0 24 24" 
@@ -9,7 +9,7 @@ export const ALogoIcon: React.FC<{ className?: string }> = ({ className }) => (
         strokeWidth="2" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
-        className={className || "w-6 h-6"}
+        className={className || "w-8 h-8"}
     >
         <defs>
             <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -18,11 +18,12 @@ export const ALogoIcon: React.FC<{ className?: string }> = ({ className }) => (
                 <stop offset="100%" style={{ stopColor: '#22d3ee' }} />
             </linearGradient>
         </defs>
-        <path d="M12 19V5L5 19" stroke="url(#logoGradient)" />
-        <path d="M12 5L19 19" stroke="url(#logoGradient)" />
-        <path d="M8.5 14H15.5" stroke="url(#logoGradient)" />
+        <path d="M4 4h16v16H4z" fill="url(#logoGradient)" rx="2"/>
+        <path d="m8 16 4-12 4 12" stroke="#ffffff" strokeWidth="1.5"/>
+        <path d="M9 13h6" stroke="#ffffff" strokeWidth="1.5"/>
     </svg>
 );
+
 
 export const VideoIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
