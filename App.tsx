@@ -16,10 +16,10 @@ const HistoryTab = () => <div className="p-4 bg-[var(--card-bg-color)] rounded-l
 
 type Tab = 'Editor' | 'Combine' | 'Video' | 'Trending' | 'History' | 'Community' | 'Bot';
 type Theme = 'light' | 'dark';
+type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
 
 const App: React.FC = () => {
-    const [showSplash, setShowSplash] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // Default to false to show login
+    const [authStatus, setAuthStatus] = useState<AuthStatus>('checking');
     const [activeTab, setActiveTab] = useState<Tab>('Editor');
 
     const [theme, setTheme] = useState<Theme>(() => {
@@ -32,12 +32,19 @@ const App: React.FC = () => {
     });
 
     useEffect(() => {
-        const timer = setTimeout(() => setShowSplash(false), 2500);
+        const timer = setTimeout(() => {
+            const isLoggedIn = localStorage.getItem('magic_editor_auth') === 'true';
+            setAuthStatus(isLoggedIn ? 'authenticated' : 'unauthenticated');
+        }, 2500); // Splash screen duration
         return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
         localStorage.setItem('theme', theme);
     }, [theme]);
     
@@ -46,11 +53,11 @@ const App: React.FC = () => {
     }, []);
 
     const handleLogin = async (username: string, password: string): Promise<void> => {
-        // Dummy authentication logic
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                if (username === 'admin' && password === 'password') {
-                    setIsAuthenticated(true);
+                if (username === 'ashishkrshaw' && password === 'Kalavu@#8999') {
+                    localStorage.setItem('magic_editor_auth', 'true');
+                    setAuthStatus('authenticated');
                     resolve();
                 } else {
                     reject(new Error('Invalid username or password'));
@@ -60,7 +67,8 @@ const App: React.FC = () => {
     };
     
     const handleLogout = useCallback(() => {
-        setIsAuthenticated(false);
+        localStorage.removeItem('magic_editor_auth');
+        setAuthStatus('unauthenticated');
     }, []);
 
     const handleFeedbackClick = useCallback(() => {
@@ -81,11 +89,11 @@ const App: React.FC = () => {
         }
     };
 
-    if (showSplash) {
+    if (authStatus === 'checking') {
         return <SplashScreen />;
     }
 
-    if (!isAuthenticated) {
+    if (authStatus === 'unauthenticated') {
         return <Login onLogin={handleLogin} />;
     }
 
