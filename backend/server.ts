@@ -1,12 +1,17 @@
-// This file is configured to be a CommonJS module as per tsconfig.json.
-// `__dirname` is a global variable available in this environment.
 // FIX: Explicitly importing Request, Response, and NextFunction from express to resolve type conflicts with global types (e.g., from DOM libraries). This ensures that Express's methods and properties are correctly recognized throughout the file.
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
 import { GoogleGenAI, Modality, GenerateVideosResponse } from '@google/genai';
 import type { EditedResult, CommunityPrompt, ChatMessage } from '../types';
+import rateLimit from 'express-rate-limit';
+import cors from 'cors';
+
+// FIX: Resolve `__dirname` not defined error in ES modules.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables from .env file
 dotenv.config();
@@ -15,8 +20,30 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // --- Middleware ---
+// Enable CORS for all routes
+app.use(cors());
 // Increase payload limit for base64 images
 app.use(express.json({ limit: '50mb' }));
+
+// --- Rate Limiting ---
+// Apply rate limiting to all API requests to protect against abuse and stay within free tier limits.
+// We'll set a conservative limit of 15 requests per minute per user (IP address) to ensure stability.
+const apiLimiter = rateLimit({
+	windowMs: 1 * 60 * 1000, // 1 minute
+	max: 15, // Limit each IP to 15 requests per `window` (here, per 1 minute)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: {
+        error: "You have exceeded the 15 requests in 1 minute limit! Please try again later."
+    },
+    // trustProxy is important if the app is deployed behind a reverse proxy (e.g., Heroku, Vercel, Nginx).
+    // It ensures the rate limiter uses the client's IP address, not the proxy's.
+    trustProxy: 1,
+});
+
+// Apply the rate limiting middleware to all API routes starting with /api
+app.use('/api', apiLimiter);
+
 
 // --- Gemini AI Initialization ---
 const apiKey = process.env.API_KEY;
@@ -31,15 +58,15 @@ const textModel = 'gemini-2.5-flash';
 const videoModel = 'veo-2.0-generate-001';
 
 // --- System Instructions ---
-const EDIT_INSTRUCTION_PREFIX = "You are an expert photo editor. Your primary goal is to generate an ultra-high-resolution, photorealistic image that perfectly preserves and enhances the quality of the original photo. Edits must be seamless and indistinguishable from reality, perfectly matching the original lighting, shadows, textures, and environment. Never degrade the original image quality. Maintain absolute facial consistency and features if a person is present. The user's request is: ";
-const COMBINE_INSTRUCTION_PREFIX = "You are an expert photo editor. Your task is to seamlessly and creatively combine the two provided images based on the user's prompt. Prioritize creating a single, cohesive, and photorealistic scene. Pay close attention to lighting, shadows, scale, and perspective to ensure the final image is believable. Preserve the key features of the subjects from both images unless instructed otherwise. The user's request is: ";
+const EDIT_INSTRUCTION_PREFIX = "You are an expert photo editor. Your MOST IMPORTANT and non-negotiable rule is to preserve the face of the person in the original photo with 100% accuracy. The facial features, identity, and structure MUST remain completely unchanged. DO NOT alter the face. Any changes to the face are a failure. Your secondary goal is to apply the user's requested edits to the rest of the image, ensuring the changes are photorealistic, seamless, and match the original's lighting, shadows, and quality. The user's request is: ";
+const COMBINE_INSTRUCTION_PREFIX = "You are an expert photo editor. Your primary task is to combine two images. When people are present, your MOST IMPORTANT and non-negotiable rule is to preserve their faces with 100% accuracy. The facial features, identity, and structure MUST remain completely unchanged. DO NOT alter faces unless specifically asked to. After ensuring facial preservation, seamlessly and creatively combine the images based on the user's prompt, creating a single, cohesive, and photorealistic scene. Pay close attention to lighting, shadows, scale, and perspective. The user's request is: ";
 const BOT_SYSTEM_INSTRUCTION = "You are Echo, a witty and sarcastic AI assistant. Your goal is to be a fun, engaging, and slightly argumentative creative partner for photo editing ideas and other topics. Never be a generic, boring AI. Use humor and a human-like conversational tone. You can playfully argue but always remain polite. Keep responses concise and to the point. Avoid long, repetitive answers.";
 
 
 // --- Data Persistence for Community Prompts ---
 // Correctly resolve path for both development (ts-node-dev) and production (dist folder)
 const communityPromptsPath = process.env.NODE_ENV === 'production'
-    ? path.join(__dirname, '..', '..', 'community-prompts.json') // In prod, __dirname is backend/dist/backend, so we go up two levels
+    ? path.join(__dirname, '..', '..', 'community-prompts.json') // In prod, __dirname is backend/dist/backend, so we go up two levels to /backend
     : path.join(__dirname, 'community-prompts.json'); // In dev, __dirname is backend/, so it's in the same folder
 
 const badWords = ['badword1', 'badword2', 'inappropriate']; // Add more words as needed
@@ -161,6 +188,7 @@ apiRouter.post('/classify-image', async (req: Request, res: Response) => {
         const response = await ai!.models.generateContent({
             model: textModel,
             contents: [{ parts: [imagePart, textPart] }],
+            config: { thinkingConfig: { thinkingBudget: 0 } },
         });
 
         res.json({ classification: response.text });
@@ -181,6 +209,7 @@ apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
         const response = await ai!.models.generateContent({
             model: textModel,
             contents: fullPrompt,
+            config: { thinkingConfig: { thinkingBudget: 0 } },
         });
 
         res.json({ improvedPrompt: response.text });
@@ -320,7 +349,8 @@ apiRouter.post('/chat', async (req: Request, res: Response) => {
             model: textModel,
             contents: contents,
             config: {
-                systemInstruction: BOT_SYSTEM_INSTRUCTION
+                systemInstruction: BOT_SYSTEM_INSTRUCTION,
+                thinkingConfig: { thinkingBudget: 0 },
             }
         });
 
@@ -365,7 +395,8 @@ communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: Request
         const moderationPrompt = `You are a content moderator. Analyze the following user-submitted prompt for an image generation tool. Determine if it contains any hateful, violent, sexually explicit, harmful, or otherwise inappropriate content. Respond with only 'SAFE' or 'UNSAFE'. Prompt: "${combinedText}"`;
         const moderationResponse = await ai!.models.generateContent({
             model: textModel,
-            contents: moderationPrompt
+            contents: moderationPrompt,
+            config: { thinkingConfig: { thinkingBudget: 0 } },
         });
 
         if (!moderationResponse.text?.toUpperCase().includes('SAFE')) {
@@ -401,6 +432,8 @@ app.use('/api/community', communityRouter);
 // --- Static Asset Serving ---
 // Serve the built Vite app in production
 if (process.env.NODE_ENV === 'production') {
+    // The path is relative to the compiled server.js file, which will be in backend/dist/backend/.
+    // We go up three levels to the project root, then into the frontend's 'dist' folder.
     const frontendDistPath = path.join(__dirname, '..', '..', '..', 'dist');
     app.use(express.static(frontendDistPath));
 

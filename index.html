@@ -5,6 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Photo Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Set theme on initial load to prevent flash of wrong theme
@@ -16,24 +19,27 @@
     </script>
     <style>
       :root {
-        --accent-color: #6366f1; /* indigo-500 */
-        --accent-color-hover: #4f46e5; /* indigo-600 */
+        --accent-color: #475569; /* slate-600 */
+        --accent-color-hover: #334155; /* slate-700 */
       }
       body {
-        --bg-color: #f1f5f9; /* slate-100 */
-        --text-color: #334155; /* slate-700 */
+        --bg-color: #f8fafc; /* slate-50 */
+        --text-color: #475569; /* slate-600 */
         --text-color-strong: #0f172a; /* slate-900 */
         --card-bg-color: #ffffff;
-        --border-color: #cbd5e1; /* slate-300 */
-        --input-bg-color: #ffffff;
+        --border-color: #e2e8f0; /* slate-200 */
+        --input-bg-color: #f1f5f9; /* slate-100 */
+        font-family: 'Inter', sans-serif;
       }
       html.dark body {
-        --bg-color: #0f172a; /* slate-900 */
-        --text-color: #cbd5e1; /* slate-300 */
+        --accent-color: #94a3b8; /* slate-400 */
+        --accent-color-hover: #cbd5e1; /* slate-300 */
+        --bg-color: #020617; /* slate-950 */
+        --text-color: #94a3b8; /* slate-400 */
         --text-color-strong: #f1f5f9; /* slate-100 */
-        --card-bg-color: #1e293b; /* slate-800 */
-        --border-color: #334155; /* slate-700 */
-        --input-bg-color: #0f172a; /* slate-900 */
+        --card-bg-color: #0f172a; /* slate-900 */
+        --border-color: #1e293b; /* slate-800 */
+        --input-bg-color: #1e293b; /* slate-800 */
       }
       body {
         background-color: var(--bg-color);
@@ -42,7 +48,7 @@
       }
       /* Custom scrollbar for a more modern look */
       ::-webkit-scrollbar {
-          width: 8px;
+          width: 10px;
       }
       ::-webkit-scrollbar-track {
           background: transparent;
@@ -52,6 +58,9 @@
           border-radius: 10px;
           border: 2px solid var(--bg-color);
       }
+       ::-webkit-scrollbar-thumb:hover {
+          background-color: var(--accent-color);
+      }
     </style>
 <script type="importmap">
 {
@@ -59,14 +68,16 @@
     "react": "https://aistudiocdn.com/react@^19.1.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0",
     "express": "https://aistudiocdn.com/express@^5.1.0",
     "dotenv": "https://aistudiocdn.com/dotenv@^17.2.2",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0",
-    "vite": "https://aistudiocdn.com/vite@^7.1.6",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.3",
     "path": "https://aistudiocdn.com/path@^0.12.7",
     "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
-    "url": "https://aistudiocdn.com/url@^0.11.4"
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "vite": "https://aistudiocdn.com/vite@^7.1.7",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.3",
+    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.1.0",
+    "cors": "https://aistudiocdn.com/cors@^2.8.5"
   }
 }
 </script>

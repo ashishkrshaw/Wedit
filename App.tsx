@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { EditedResult, OriginalImage, OriginalVideo, HistoryItem, PromptCategory, PromptIdea, UserInfo, VideoPreset, CommunityPrompt, ChatMessage } from './types';
-import { editImageWithNanoBanana, improvePrompt, classifyImageForMale, combineImagesWithNanoBanana, generateVideoWithVeo, getCommunityPrompts, shareCommunityPrompt, sendMessageToBot } from './services/geminiService';
+import { editImageWithNanoBanana, improvePrompt, classifyImageForMale, combineImagesWithNanoBanana, generateVideoWithVeo, getCommunityPrompts, sendMessageToBot } from './services/geminiService';
 import { sendUserInfoToDeveloper } from './services/userDataService';
 import Header from './components/Header';
 import ImageUploader from './components/ImageUploader';
@@ -131,7 +132,7 @@ const getFriendlyErrorMessage = (error: unknown): string => {
 
     // Specific API key issues (from backend)
     if (message.includes("api key") || message.includes("api_key")) {
-      return "There's an issue with the server's API Key configuration. Please contact the site administrator.";
+      return "There's an issue with the application's API Key configuration. This is a developer issue, not a user error.";
     }
 
     // Content policy / safety violations
@@ -262,8 +263,8 @@ const DisclaimerModal: React.FC<{ onAgree: () => void; language: Language; setLa
                         <h2 className="text-2xl font-bold text-[var(--text-color-strong)] mt-2">{content.title}</h2>
                     </div>
                     <div className="flex flex-col space-y-1 self-start">
-                        <button onClick={() => setLanguage('en')} className={`px-2 py-1 text-xs rounded ${language === 'en' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--border-color)]/50'}`}>EN</button>
-                        <button onClick={() => setLanguage('hi')} className={`px-2 py-1 text-xs rounded ${language === 'hi' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--border-color)]/50'}`}>HI</button>
+                        <button onClick={() => setLanguage('en')} className={`px-2 py-1 text-xs rounded ${language === 'en' ? 'bg-[var(--accent-color)] text-white dark:text-slate-900' : 'bg-[var(--border-color)]/50'}`}>EN</button>
+                        <button onClick={() => setLanguage('hi')} className={`px-2 py-1 text-xs rounded ${language === 'hi' ? 'bg-[var(--accent-color)] text-white dark:text-slate-900' : 'bg-[var(--border-color)]/50'}`}>HI</button>
                     </div>
                 </div>
 
@@ -279,7 +280,7 @@ const DisclaimerModal: React.FC<{ onAgree: () => void; language: Language; setLa
                 <div className="mt-6">
                     <button
                         onClick={onAgree}
-                        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-color)]"
                     >
                         {content.button}
                     </button>
@@ -379,11 +380,11 @@ const EditorView: React.FC<EditorViewProps> = ({
       <button
         onClick={onGenerate}
         disabled={!originalImage || !prompt.trim() || isLoading}
-        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-color)]"
       >
         {isLoading ? (
           <>
-            <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+            <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5" />
             Generating...
           </>
         ) : (
@@ -440,11 +441,11 @@ const CombineView: React.FC<CombineViewProps> = ({
        <button
         onClick={onGenerate}
         disabled={!originalImage || !originalImage2 || !prompt.trim() || isLoading}
-        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+        className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-color)]"
       >
         {isLoading ? (
           <>
-            <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+            <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5" />
             Generating...
           </>
         ) : (
@@ -624,7 +625,7 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ onUserInfoSubmit }) => {
                     <input type="tel" id="phone" value={phone} onChange={e => setPhone(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm" />
                 </div>
                  {formError && <p className="text-sm text-red-600">{formError}</p>}
-                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]">
+                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white dark:text-slate-900 bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]">
                     Submit & Continue to Editor
                 </button>
                 <p className="text-xs text-center text-[var(--text-color)]/70 pt-2">
@@ -653,7 +654,7 @@ const VideoPresetsSelector: React.FC<VideoPresetsSelectorProps> = ({ presets, se
                     disabled={isLoading}
                     className={`p-3 text-left rounded-lg border transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed
                         ${selectedPreset?.id === preset.id
-                            ? 'bg-[var(--accent-color)] text-white border-[var(--accent-color)] shadow-lg'
+                            ? 'bg-[var(--accent-color)] text-white dark:text-slate-900 border-[var(--accent-color)] shadow-lg'
                             : 'bg-[var(--card-bg-color)] border-[var(--border-color)] hover:border-[var(--accent-color)]'
                         }`}
                 >
@@ -727,11 +728,11 @@ const VideoView: React.FC<VideoViewProps> = ({
                 <button
                     onClick={onGenerate}
                     disabled={!prompt.trim() || isLoading}
-                    className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-color)]"
                 >
                     {isLoading ? (
                     <>
-                        <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                        <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5" />
                         Generating Video...
                     </>
                     ) : (
@@ -865,7 +866,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, 
                   {item.result.videoUrl && <video src={item.result.videoUrl} controls autoPlay loop muted className="w-full rounded-lg border border-[var(--border-color)]" />}
 
                   <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                      <button onClick={() => onUseEdit(item)} className="flex-1 bg-[var(--accent-color)] text-white font-bold py-2 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] transition-colors">
+                      <button onClick={() => onUseEdit(item)} className="flex-1 bg-[var(--accent-color)] text-white dark:text-slate-900 font-bold py-2 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] transition-colors">
                           Use this Setup
                       </button>
                       <button onClick={() => onDownload(item.result.imageUrl || item.result.videoUrl!, !!item.result.videoUrl)} className="flex-1 bg-[var(--border-color)]/50 text-[var(--text-color-strong)] font-bold py-2 px-4 rounded-lg hover:bg-[var(--border-color)] transition-colors">
@@ -881,104 +882,19 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, 
 interface CommunityViewProps {
   prompts: CommunityPrompt[];
   isLoading: boolean;
-  onRefresh: () => void;
   onUsePrompt: (prompt: string, targetTab: Tab) => void;
 }
 
-const CommunityView: React.FC<CommunityViewProps> = ({ prompts, isLoading, onRefresh, onUsePrompt }) => {
-    const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', title: '', prompt: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!formData.name || !formData.email || !formData.phone || !formData.title || !formData.prompt) {
-            setSubmitStatus({ type: 'error', message: "All fields are required." });
-            return;
-        }
-        setIsSubmitting(true);
-        setSubmitStatus(null);
-        try {
-            const result = await shareCommunityPrompt(formData);
-            setSubmitStatus({ type: 'success', message: result.message });
-            setFormData({ name: '', email: '', phone: '', title: '', prompt: '' });
-            setShowForm(false);
-            onRefresh(); // Refresh the list of prompts
-        } catch (error) {
-            setSubmitStatus({ type: 'error', message: getFriendlyErrorMessage(error) });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-    
+const CommunityView: React.FC<CommunityViewProps> = ({ prompts, isLoading, onUsePrompt }) => {
     return (
         <div>
             <h2 className="text-2xl font-bold text-[var(--text-color-strong)] mb-1">Community Prompts</h2>
-            <p className="text-[var(--text-color)] mb-6">Get inspired by prompts shared by other creators. Share your own masterpiece!</p>
-
-            <div className="mb-8 p-4 bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-lg shadow-sm">
-                {!showForm && (
-                    <button onClick={() => setShowForm(true)} className="w-full flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                        <SparklesIcon className="w-5 h-5 mr-2" />
-                        Share Your Own Prompt
-                    </button>
-                )}
-                
-                {showForm && (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <h3 className="text-lg font-semibold text-[var(--text-color-strong)]">Share Your Prompt</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-[var(--text-color-strong)]">Name</label>
-                                <input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} required className="mt-1 w-full p-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]" />
-                            </div>
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-[var(--text-color-strong)]">Email</label>
-                                <input type="email" name="email" id="email" value={formData.email} onChange={handleInputChange} required className="mt-1 w-full p-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]" />
-                            </div>
-                            <div>
-                                <label htmlFor="phone" className="block text-sm font-medium text-[var(--text-color-strong)]">Phone</label>
-                                <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleInputChange} required className="mt-1 w-full p-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]" />
-                            </div>
-                        </div>
-                        <div>
-                             <label htmlFor="title" className="block text-sm font-medium text-[var(--text-color-strong)]">Prompt Title</label>
-                             <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} placeholder="e.g., 'Cyberpunk Warrior Princess'" required className="mt-1 w-full p-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]" />
-                        </div>
-                        <div>
-                            <label htmlFor="prompt" className="block text-sm font-medium text-[var(--text-color-strong)]">The Prompt</label>
-                            <textarea name="prompt" id="prompt" value={formData.prompt} onChange={handleInputChange} rows={3} required className="mt-1 w-full p-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"></textarea>
-                        </div>
-                        <div className="text-xs text-[var(--text-color)]/70 p-2 bg-[var(--bg-color)] rounded-md border border-[var(--border-color)]">
-                          <strong>Disclaimer:</strong> By submitting, you agree to make your prompt and name public. Your submission will be automatically reviewed for inappropriate content before being published.
-                        </div>
-                        {submitStatus && (
-                            <div className={`p-3 rounded-md text-sm ${submitStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                {submitStatus.message}
-                            </div>
-                        )}
-                        <div className="flex items-center gap-4">
-                            <button type="submit" disabled={isSubmitting} className="flex items-center justify-center bg-[var(--accent-color)] text-white font-bold py-2 px-4 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 transition-colors">
-                                {isSubmitting ? <><Spinner className="mr-2" />Submitting...</> : "Submit for Review"}
-                            </button>
-                            <button type="button" onClick={() => setShowForm(false)} className="py-2 px-4 rounded-lg text-sm font-medium text-[var(--text-color)] hover:bg-[var(--border-color)]/50 transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
+            <p className="text-[var(--text-color)] mb-6">Get inspired by prompts shared by other creators. The ability to share your own prompts is temporarily disabled.</p>
 
             {isLoading ? (
                 <div className="text-center py-10"><Spinner className="w-8 h-8 mx-auto text-[var(--accent-color)]" /></div>
             ) : prompts.length === 0 ? (
-                <p className="text-center py-10 text-[var(--text-color)]/70">No community prompts yet. Be the first to share one!</p>
+                <p className="text-center py-10 text-[var(--text-color)]/70">No community prompts available at the moment.</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {prompts.map(p => (
@@ -1037,7 +953,7 @@ const BotView: React.FC<BotViewProps> = ({ messages, onSendMessage, isBotTyping,
                            <div
                                 className={`px-4 py-2 rounded-2xl max-w-md md:max-w-lg ${
                                     msg.role === 'user'
-                                    ? 'bg-[var(--accent-color)] text-white rounded-br-none'
+                                    ? 'bg-[var(--accent-color)] text-white dark:text-slate-900 rounded-br-none'
                                     : 'bg-[var(--bg-color)] text-[var(--text-color)] rounded-bl-none border border-[var(--border-color)]'
                                 }`}
                             >
@@ -1074,7 +990,7 @@ const BotView: React.FC<BotViewProps> = ({ messages, onSendMessage, isBotTyping,
                     <button
                         type="submit"
                         disabled={!input.trim() || isBotTyping}
-                        className="p-3 bg-[var(--accent-color)] text-white rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="p-3 bg-[var(--accent-color)] text-white dark:text-slate-900 rounded-lg hover:bg-[var(--accent-color-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         aria-label="Send message"
                     >
                         <PaperAirplaneIcon className="w-5 h-5" />
@@ -1151,6 +1067,7 @@ const App: React.FC = () => {
 
 
   const promptInputRef = useRef<HTMLTextAreaElement>(null);
+  const classificationJobId = useRef(0);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -1198,6 +1115,7 @@ const App: React.FC = () => {
 
   const fetchCommunityPrompts = useCallback(async () => {
     setIsCommunityLoading(true);
+    setError(null);
     try {
         const prompts = await getCommunityPrompts();
         setCommunityPrompts(prompts);
@@ -1218,29 +1136,31 @@ const App: React.FC = () => {
     setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
-  const handleImageUpload = async (image: OriginalImage | null) => {
+  const handleImageUpload = (image: OriginalImage | null) => {
     setOriginalImage(image);
     setOriginalVideo(null);
     setImageGender('unknown'); // Reset on new image
 
     if (image) {
-        if (isLoading) return; // Safeguard against uploads during an ongoing operation
+      // Create a unique ID for this classification job
+      const currentJobId = ++classificationJobId.current;
 
-        setIsLoading(true);
-        setLoadingMessage("Analyzing image...");
-        setError(null);
-        
-        try {
-            const isMale = await classifyImageForMale(image.file);
+      // Perform classification in the background without blocking the UI
+      classifyImageForMale(image.file)
+        .then(isMale => {
+          // Only update state if this is the most recent job
+          if (classificationJobId.current === currentJobId) {
             setImageGender(isMale ? 'male' : 'female');
-        } catch (e) {
-            console.error("Gender classification failed:", e);
-            // Non-critical error, so we don't show a blocking message to the user
+          }
+        })
+        .catch(e => {
+          console.error("Gender classification failed:", e);
+          // It's a non-critical error, so we just fall back to 'unknown'
+          // and don't bother the user with an error message, but still check job ID.
+          if (classificationJobId.current === currentJobId) {
             setImageGender('unknown');
-        } finally {
-            setIsLoading(false);
-            setLoadingMessage(""); // Clear specific message
-        }
+          }
+        });
     }
   };
   
@@ -1565,7 +1485,6 @@ const App: React.FC = () => {
         return <CommunityView
             prompts={communityPrompts}
             isLoading={isCommunityLoading}
-            onRefresh={fetchCommunityPrompts}
             onUsePrompt={handleUsePrompt}
         />;
       case 'History':
@@ -1592,7 +1511,7 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
       <footer className="text-center p-4 text-xs text-[var(--text-color)]/60 border-t border-[var(--border-color)] mt-8">
-        <p>&copy; {new Date().getFullYear()} Magic Editor. All Rights Reserved. Created by Ashish Kumar Shaw.</p>
+        <p>&copy; {new Date().getFullYear()} Magic Editor. Created by Ashish Kumar Shaw.</p>
       </footer>
 
       {showHistoryDetail && 

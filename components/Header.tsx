@@ -46,12 +46,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, theme, toggleT
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <ALogoIcon className="w-8 h-8" />
-          <div className="flex flex-col">
-            <h1 className="text-lg font-bold tracking-tight text-[var(--text-color-strong)]">
-              Magic Editor
-            </h1>
-            <p className="text-xs text-[var(--text-color)] -mt-1">by Ashish Kumar Shaw</p>
-          </div>
+          <h1 className="text-lg font-bold tracking-tight text-[var(--text-color-strong)]">
+            Magic Editor
+          </h1>
         </div>
         
         <div className="flex items-center space-x-2">
