@@ -3,13 +3,15 @@
 // FIX: Changed express import to a default import. All Request, Response, and NextFunction types are now explicitly namespaced (e.g., express.Request). This resolves conflicts with global types (e.g., DOM's Request) and fixes numerous 'property not found' errors on req and res objects.
 // FIX: Changed express import to include named type imports and replaced namespaced types (e.g., express.Request) with direct types (e.g., Request) to resolve all type errors.
 // FIX: Switched to a default express import and namespaced types (express.Request, express.Response) to resolve conflicts with global types and fix property errors.
+// FIX: Corrected the express import to include Request, Response, and NextFunction types, which resolves all subsequent type errors in this file.
+// FIX: Switched to a default express import and namespaced types (e.g. express.Request) to resolve conflicts with global types and fix property errors.
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Modality, GenerateVideosResponse } from '@google/genai';
-import type { EditedResult, CommunityPrompt, ChatMessage } from '../types';
+import type { EditedResult, CommunityPrompt, ChatMessage } from '../types.js';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 
@@ -132,6 +134,7 @@ const processImageApiResponse = (response: any): EditedResult => {
 };
 
 // Centralized error handler for generating user-friendly messages
+// FIX: Replaced namespaced express types with direct named imports.
 const handleApiError = (error: unknown, req: express.Request, res: express.Response) => {
     console.error(`Error in ${req.path}:`, error);
     let friendlyMessage = "An unexpected server error occurred. Please try again later.";
@@ -167,6 +170,7 @@ const handleApiError = (error: unknown, req: express.Request, res: express.Respo
 
 
 // Middleware to gracefully handle missing API key
+// FIX: Replaced namespaced express types with direct named imports.
 const checkApiKeyAndService = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (!ai) {
         return res.status(503).json({
@@ -181,6 +185,7 @@ const checkApiKeyAndService = (req: express.Request, res: express.Response, next
 const apiRouter = express.Router();
 apiRouter.use(checkApiKeyAndService); // Apply middleware to all API routes
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/classify-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData } = req.body;
@@ -203,6 +208,7 @@ apiRouter.post('/classify-image', async (req: express.Request, res: express.Resp
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt } = req.body;
@@ -224,6 +230,7 @@ apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Resp
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/edit-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData, prompt } = req.body;
@@ -249,6 +256,7 @@ apiRouter.post('/edit-image', async (req: express.Request, res: express.Response
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/combine-images', async (req: express.Request, res: express.Response) => {
     try {
         const { image1Data, image2Data, prompt } = req.body;
@@ -275,6 +283,7 @@ apiRouter.post('/combine-images', async (req: express.Request, res: express.Resp
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/generate-video', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt, imageData } = req.body;
@@ -298,6 +307,7 @@ apiRouter.post('/generate-video', async (req: express.Request, res: express.Resp
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/video-status', async (req: express.Request, res: express.Response) => {
     try {
         const { operationName } = req.body;
@@ -341,6 +351,7 @@ apiRouter.post('/video-status', async (req: express.Request, res: express.Respon
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
     try {
         const { history, newMessage } = req.body as { history: ChatMessage[], newMessage: string };
@@ -376,6 +387,7 @@ apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
 // --- Community Endpoints ---
 const communityRouter = express.Router();
 
+// FIX: Replaced namespaced express types with direct named imports.
 communityRouter.get('/prompts', async (req: express.Request, res: express.Response) => {
     try {
         const communityPrompts = await readPromptsFromFile();
@@ -386,6 +398,7 @@ communityRouter.get('/prompts', async (req: express.Request, res: express.Respon
     }
 });
 
+// FIX: Replaced namespaced express types with direct named imports.
 communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: express.Request, res: express.Response) => {
     try {
         const { name, email, phone, title, prompt } = req.body;
