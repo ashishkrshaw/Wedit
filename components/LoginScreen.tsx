@@ -50,7 +50,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   className="block w-full pl-10 pr-3 py-2 bg-[var(--input-bg-color)] border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] sm:text-sm"
-                  placeholder="ashishkrshaw"
+                  placeholder="username"
                 />
               </div>
             </div>
