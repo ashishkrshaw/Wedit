@@ -1,10 +1,6 @@
 // This file had a user-provided comment indicating a fix that was already present but not working.
 // The new fix changes the import style to avoid global type conflicts.
-// FIX: Changed express import to a default import. All Request, Response, and NextFunction types are now explicitly namespaced (e.g., express.Request). This resolves conflicts with global types (e.g., DOM's Request) and fixes numerous 'property not found' errors on req and res objects.
-// FIX: Changed express import to include named type imports and replaced namespaced types (e.g., express.Request) with direct types (e.g., Request) to resolve all type errors.
-// FIX: Switched to a default express import and namespaced types (express.Request, express.Response) to resolve conflicts with global types and fix property errors.
-// FIX: Corrected the express import to include Request, Response, and NextFunction types, which resolves all subsequent type errors in this file.
-// FIX: Switched to a default express import and namespaced types (e.g. express.Request) to resolve conflicts with global types and fix property errors.
+// FIX: Switched to a default express import and namespaced types (e.g., express.Request) to resolve conflicts with global types and fix property errors.
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
