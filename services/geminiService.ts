@@ -1,8 +1,9 @@
-/// <reference types="vite/client" />
+
 
 import type { EditedResult, CommunityPrompt, ChatMessage } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// FIX: Cast `import.meta` to `any` to access Vite environment variables without TypeScript errors, which arise from a misconfigured TS environment that cannot find Vite's client types.
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || '';
 
 // Helper to convert a File to a base64 string and mimeType
 const fileToBase64 = (file: File): Promise<{ data: string; mimeType: string }> => {

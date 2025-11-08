@@ -2,7 +2,8 @@
 // The new fix changes the import style to avoid global type conflicts.
 // FIX: Changed express import to a default import. All Request, Response, and NextFunction types are now explicitly namespaced (e.g., express.Request). This resolves conflicts with global types (e.g., DOM's Request) and fixes numerous 'property not found' errors on req and res objects.
 // FIX: Changed express import to include named type imports and replaced namespaced types (e.g., express.Request) with direct types (e.g., Request) to resolve all type errors.
-import express, { Request, Response, NextFunction } from 'express';
+// FIX: Switched to a default express import and namespaced types (express.Request, express.Response) to resolve conflicts with global types and fix property errors.
+import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs/promises';
@@ -131,7 +132,7 @@ const processImageApiResponse = (response: any): EditedResult => {
 };
 
 // Centralized error handler for generating user-friendly messages
-const handleApiError = (error: unknown, req: Request, res: Response) => {
+const handleApiError = (error: unknown, req: express.Request, res: express.Response) => {
     console.error(`Error in ${req.path}:`, error);
     let friendlyMessage = "An unexpected server error occurred. Please try again later.";
     let statusCode = 500;
@@ -166,7 +167,7 @@ const handleApiError = (error: unknown, req: Request, res: Response) => {
 
 
 // Middleware to gracefully handle missing API key
-const checkApiKeyAndService = (req: Request, res: Response, next: NextFunction) => {
+const checkApiKeyAndService = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (!ai) {
         return res.status(503).json({
             error: "Service Unavailable: The server is missing the required API_KEY. Please contact the administrator to configure the server environment."
@@ -180,7 +181,7 @@ const checkApiKeyAndService = (req: Request, res: Response, next: NextFunction) 
 const apiRouter = express.Router();
 apiRouter.use(checkApiKeyAndService); // Apply middleware to all API routes
 
-apiRouter.post('/classify-image', async (req: Request, res: Response) => {
+apiRouter.post('/classify-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData } = req.body;
         if (!imageData) {
@@ -202,7 +203,7 @@ apiRouter.post('/classify-image', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
+apiRouter.post('/improve-prompt', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt } = req.body;
         if (!prompt) {
@@ -223,7 +224,7 @@ apiRouter.post('/improve-prompt', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/edit-image', async (req: Request, res: Response) => {
+apiRouter.post('/edit-image', async (req: express.Request, res: express.Response) => {
     try {
         const { imageData, prompt } = req.body;
         if (!imageData || !prompt) {
@@ -248,7 +249,7 @@ apiRouter.post('/edit-image', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/combine-images', async (req: Request, res: Response) => {
+apiRouter.post('/combine-images', async (req: express.Request, res: express.Response) => {
     try {
         const { image1Data, image2Data, prompt } = req.body;
         if (!image1Data || !image2Data || !prompt) {
@@ -274,7 +275,7 @@ apiRouter.post('/combine-images', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/generate-video', async (req: Request, res: Response) => {
+apiRouter.post('/generate-video', async (req: express.Request, res: express.Response) => {
     try {
         const { prompt, imageData } = req.body;
         if (!prompt) {
@@ -297,7 +298,7 @@ apiRouter.post('/generate-video', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/video-status', async (req: Request, res: Response) => {
+apiRouter.post('/video-status', async (req: express.Request, res: express.Response) => {
     try {
         const { operationName } = req.body;
         if (!operationName) {
@@ -340,7 +341,7 @@ apiRouter.post('/video-status', async (req: Request, res: Response) => {
     }
 });
 
-apiRouter.post('/chat', async (req: Request, res: Response) => {
+apiRouter.post('/chat', async (req: express.Request, res: express.Response) => {
     try {
         const { history, newMessage } = req.body as { history: ChatMessage[], newMessage: string };
         if (!newMessage) {
@@ -375,7 +376,7 @@ apiRouter.post('/chat', async (req: Request, res: Response) => {
 // --- Community Endpoints ---
 const communityRouter = express.Router();
 
-communityRouter.get('/prompts', async (req: Request, res: Response) => {
+communityRouter.get('/prompts', async (req: express.Request, res: express.Response) => {
     try {
         const communityPrompts = await readPromptsFromFile();
         // Return prompts in reverse chronological order
@@ -385,7 +386,7 @@ communityRouter.get('/prompts', async (req: Request, res: Response) => {
     }
 });
 
-communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: Request, res: Response) => {
+communityRouter.post('/share-prompt', checkApiKeyAndService, async (req: express.Request, res: express.Response) => {
     try {
         const { name, email, phone, title, prompt } = req.body;
         if (!name || !email || !phone || !title || !prompt) {
